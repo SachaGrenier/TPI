@@ -1,52 +1,107 @@
+<?php 
+use App\Http\Controllers\MSPController;
+
+$MSPs = MSPController::getAllMSPs();
+
+?>
 @extends('layouts.app')
 
 @section('content')
 
-<form></form>
-
-        <div class="flex-center position-ref full-height">
-           	<div class="content">
-           		<div class="worker-table">
-		           	<table id="my-table" class="stripe" cellspacing="0" width="100%">
-						<thead >
-							<tr>
-								<th>ID</th>
-								<th>Prénom</th>
-								<th>Nom</th>
-								<th>Nom d'utilisateur</th>
-								<th>%</th>
-								<th>MSP</th>
-								<th>Crée le</th>
-								<th>Modifié le</th>
-								<th>Supprimer</th>
-							</tr>
-						</thead>
-						<tbody>
-						</tbody>
-					</table>
-				</div>
-
-                
-            </div>
-        </div>
-
+<div class="flex-center position-ref full-height">
+   	<div class="content">
+       	<?php
+			//bar to show information if needed
+			if (Session::get('status'))
+			{
+				echo '<div class="alert '.Session::get('class').'">';
+				echo Session::get('status');
+				echo '</div>';
+			}
+		?>  
+		<h2>Travailleurs</h2>
+   		<div class="worker-table">
+           	<table id="my-table" class="stripe" cellspacing="0" width="100%">
+				<thead >
+					<tr>
+						<th>ID</th>
+						<th>Prénom</th>
+						<th>Nom</th>
+						<th>Nom d'utilisateur</th>
+						<th>%</th>
+						<th>MSP</th>
+						<th>Crée le</th>
+						<th>Supprimer</th>
+					</tr>
+				</thead>
+				<tbody>
+				</tbody>
+			</table>
+		</div>
+		<br>
+		<h2>Maître Sociaux Professionnels</h2>
+		<div class="msp-table">
+			{{ Form::open(array('url' => 'addmsp','method'=>'POST','class' => 'form-inline')) }}
+				{{ Form::Text('msp_firstname','',['class' => 'form-control','id' => 'msp_firstname','placeholder' => ' Prénom']) }}
+				{{ Form::Text('msp_lastname','',['class' => 'form-control','id' => 'msp_lastname','placeholder' => ' Nom']) }}
+				{{ Form::Text('msp_initials','',['class' => 'form-control','id' => 'msp_initials','placeholder' => ' Initiales']) }}
+				{{ Form::submit('Créer',['class' => 'btn btn-secondary']) }}
+			{{ Form::close() }}
+			<br>
+			<table class="table table-bordered">
+			  	<thead >
+					<tr>
+						<th>ID</th>
+						<th>Prénom</th>
+						<th>Nom</th>
+						<th>Initiales</th>
+						<th>Supprimer</th>
+					</tr>
+				</thead>
+				<tbody>
+				  @foreach ($MSPs as $MSP)
+				  <tr>
+				  	<td>{{ $MSP->id }}</td>
+				  	<td>{{ $MSP->firstname }}</td>
+				  	<td>{{ $MSP->lastname }}</td>
+				  	<td>{{ $MSP->initials }}</td>
+				  	<td>
+				  		{{ Form::open(array('url' => 'deletemsp','method'=>'POST','class' => 'form-inline', 'onsubmit' => 'deleteMsp(this)')) }}
+				  			{{ Form::hidden('msp_id',$MSP->id) }}
+				  			{{ Form::submit('X',['class' => 'btn btn-danger middle-button']) }}
+				  		{{ Form::close() }}
+				  	</td>
+				  </tr>
+				  @endforeach
+				</tbody>
+			</table>
+		</div>
+    </div>
+</div>
 <script>
 $(document ).ready(function() {
 	initializeTable();
+
+	$('#msp_firstname').change(function(){
+		$('#msp_initials').val($('#msp_firstname').val().substr(0, 1)+""+ $('#msp_lastname').val().substr(0, 1));
+	});
+	$('#msp_lastname').change(function(){
+		$('#msp_initials').val($('#msp_firstname').val().substr(0, 1)+""+ $('#msp_lastname').val().substr(0, 1));
+	});
+	
 });
       function initializeTable()
       {
 
         $.ajax({
-            url: '/getworkersarray/',
+            url: '/getworkersarray',
             type: 'GET',
             dataType: 'json',
             success: function (data) {
-            	console.log(data);
-                setTable(data);
+                generateTable(data);
             }
         });
-        function setTable(data) 
+        function generateTable(data) 
         {
             var table = $('#my-table').DataTable({
             "dom": 'C<"clear">lfrtip',
@@ -71,6 +126,14 @@ $(document ).ready(function() {
 				$('#confirm').click(function(){
 					addworker();
 				});
+				$('#firstname').change(function() {
+					$('#username').val($('#firstname').val() + '_'+ $('#lastname').val());
+				});	
+
+				$('#lastname').change(function() {
+					$('#username').val($('#firstname').val() + '_'+ $('#lastname').val());
+				});	
+
             },
             "aaSorting": [],
             "aoColumnDefs": [
@@ -104,10 +167,6 @@ $(document ).ready(function() {
                },
                {
                    "aTargets": [7], 
-                   "mData": "updated_at"
-               },
-               {
-                   "aTargets": [8], 
                    "mData": "delete_link"
                }
                 ]});
@@ -116,6 +175,7 @@ $(document ).ready(function() {
 
        function addworker()
        {  
+
    		    // Variable to hold request
 			var request;
 
@@ -149,11 +209,10 @@ $(document ).ready(function() {
 
 		    // Callback handler that will be called on failure
 		    request.fail(function (jqXHR, textStatus, errorThrown){
-		        // Log the error to the console
-		        console.error(
-		            "The following error occurred: "+
-		            textStatus, errorThrown
-		        );
+		        // Show error in a message box
+		        bootbox.alert({
+				    message: jqXHR.responseText
+				});
 		    });
 
 		    // Callback handler that will be called regardless
@@ -206,5 +265,17 @@ $(document ).ready(function() {
        			 } 
        		});
       }
+      function deleteMsp(form)
+      {
+			event.preventDefault();
+	        bootbox.confirm("Êtes-vous sûr de vouloir supprimer ce Maître Sociaux Professionnels ?", function(result) {
+	            if (result) {
+	                form.submit();
+	            }
+	        });
+      }
+
+
+
 </script>	
 @endsection
