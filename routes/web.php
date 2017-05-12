@@ -14,3 +14,14 @@
 Route::get('/', function () {
     return view('welcome');
 });
+
+
+Route::get('/workers', function () {
+    return view('workers');
+});
+
+Route::get('/getworkersarray', ['uses' =>'WorkersController@getWorkersArray']);
+
+Route::post('/deleteworker', ['uses' =>'WorkersController@deleteWorker']);
+
+Route::post('addworker',['uses' => 'WorkersController@addWorker']);
