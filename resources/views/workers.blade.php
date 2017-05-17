@@ -22,7 +22,7 @@ $MSPs = MSPController::getAllMSPs();
 		<h2>Travailleurs</h2>
    		<div class="worker-table">
            	<table id="my-table" class="stripe" cellspacing="0" width="100%">
-				<thead >
+				<thead>
 					<tr>
 						<th>ID</th>
 						<th>Prénom</th>

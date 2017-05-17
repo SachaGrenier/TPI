@@ -12,8 +12,12 @@ use Illuminate\Support\Facades\Input;
 class WorkersController extends Controller
 {
 
-    public $default_general_error_message = "Un problème est intervenu, contactez l'administrateur du système";
+    private $default_general_error_message = "Un problème est intervenu, contactez l'administrateur du système";
 
+    ///getWorkersArray
+    //creates an array with the Workers Data
+    //adds a form at the last line of the array
+    //returns the array
     public function getWorkersArray()
     {
     	$workers = Worker::all();
@@ -21,6 +25,19 @@ class WorkersController extends Controller
     	$array = [];
 
     	setLocale(LC_TIME,config('app.locale'));
+
+        $form = new \stdClass();
+        
+        $form->id = "";
+        $form->firstname = "<input class='form-control' type='text' placeholder='Prénom' id='firstname'>";
+        $form->lastname = "<input class='form-control' type='text' placeholder='Nom' id='lastname'>";
+        $form->username = "<input class='form-control' type='text' id='username' placeholder=\"Nom d'utilisateur\">";
+        $form->percentage = "<input class='form-control percentage' type='text' placeholder='%' id='percentage'>";
+        $form->MSP_initials = $this->getMSPSelection();
+        $form->created_at = Carbon::now()->formatLocalized('%d %B %Y');
+        $form->delete_link = '<p id="_token" style="display:none">'. csrf_token().'</p><button class="btn btn-secondary middle-button" id="confirm">Ajouter</button>';
+
+        $array[] = $form;
 
     	foreach ($workers as $key => $value)
         {
@@ -35,22 +52,14 @@ class WorkersController extends Controller
         	$worker->delete_link = "<button onclick='deleteRow(". $value->id .",this)' value='". csrf_token()."' class='btn btn-danger middle-button'>X</button>";
 
             $array[] = $worker;
-        }
-        $form = new \stdClass();
-        
-        $form->id = "";
-        $form->firstname = "<input class='table-input' type='text' placeholder='Prénom' id='firstname'>";
-        $form->lastname = "<input class='table-input' type='text' placeholder='Nom' id='lastname'>";
-        $form->username = "<input class='table-input' type='text' id='username' placeholder=\"Nom d'utilisateur\">";
-        $form->percentage = "<input class='table-input percentage' type='text' placeholder='%' id='percentage'>";
-        $form->MSP_initials = $this->getMSPSelection();
-        $form->created_at = Carbon::now()->formatLocalized('%d %B %Y');
-        $form->delete_link = '<p id="_token" style="display:none">'. csrf_token().'</p><button class="btn btn-secondary middle-button" id="confirm">Ajouter</button>';
+        }    
 
-        $array[] = $form;
     	return $array;
     }
-    //a tester
+
+    //deleteWorker
+    //finds worker in database and deletes it
+    //returns http response
     public function deleteWorker()
     {
         if(Request::ajax()) 
@@ -68,11 +77,13 @@ class WorkersController extends Controller
             }
         }
         else
-        {
             return response($default_general_error_message,500);
-        }
        
     }
+
+    ///addWorker
+    //inserts worker in database with data given
+    //returns http response
     public function addWorker()
     {
          // Getting all post data
@@ -102,10 +113,13 @@ class WorkersController extends Controller
         }
     }
 
+    ///getMSPSelection
+    //creates select with MSPs data
+    //returns select in text
     private function getMSPSelection()
     {
         $MSPs = msp::all();
-        $select = "<select class='table-input' id='msp'>";
+        $select = "<select class='form-control' id='msp'>";
         $options = "<option disabled selected>Séléctionner MSP</option>";
         foreach ($MSPs as $MSP) 
         {
@@ -116,7 +130,6 @@ class WorkersController extends Controller
 
         return $select;
     }
-
-    
+ 
 
 }
