@@ -9,4 +9,9 @@ class Workshop_level_1 extends Model
      protected $table = 'workshop_level_1';
      public $timestamps = false;
     
+    public function color()
+    {
+        return $this->belongsTo('App\Color');       
+    }
+
 }

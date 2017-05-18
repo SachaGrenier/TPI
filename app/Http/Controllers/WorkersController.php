@@ -22,7 +22,7 @@ class WorkersController extends Controller
     {
     	$workers = Worker::all();
 
-    	$array = [];
+    	
 
     	setLocale(LC_TIME,config('app.locale'));
 
@@ -129,6 +129,21 @@ class WorkersController extends Controller
         $select .= "</select>";
 
         return $select;
+    }
+    public function getWorkers()
+    {
+        $workers = Worker::all();
+
+        $output_array = array();
+        //fills this empty array with applicant's names and encodes it
+        foreach ($workers as $row) 
+        {
+             $output_array[] = array( 
+            'id' => $row['id'],
+            'value' => $row['firstname'].' '.$row['lastname']);
+        }
+
+        return json_encode($output_array);
     }
  
 

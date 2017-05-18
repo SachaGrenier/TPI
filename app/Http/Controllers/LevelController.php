@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Input;
 
 class LevelController extends Controller
 {
-    /*static public function getLevel1()
+    static public function getLevel1()
     {
     	return Workshop_level_1::all();
     }
@@ -24,7 +24,16 @@ class LevelController extends Controller
     static public function getLevel3()
     {
     	return Workshop_level_3::all();
-    }*/
+    }
+
+    static public function getLevel2WithLevel1($id_level_1)
+    {
+        return Workshop_level_2::where('workshop_level_1_id', $id_level_1)->get();
+    }
+    static public function getLevel3WithLevel2($id_level_2)
+    {
+        return Workshop_level_3::where('workshop_level_2_id', $id_level_2)->get();
+    }
 
     public function addLevel1()
     {

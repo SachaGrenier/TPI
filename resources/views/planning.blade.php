@@ -1,10 +1,9 @@
 <?php 
 use App\Http\Controllers\LevelController;
-
-$level_1_list = LevelController::getLevel1();
-$level_2_list = LevelController::getLevel2();
-$level_3_list = LevelController::getLevel3();
-
+use App\Http\Controllers\PlanningController;
+use Carbon\Carbon;
+ setLocale(LC_TIME,config('app.locale'));
+$week = PlanningController::getWeek(Carbon::now());
 ?>
 @extends('layouts.app')
 
@@ -15,12 +14,12 @@ $level_3_list = LevelController::getLevel3();
                 <div class="weeks">
                     <button class="week-button"><</button>
                     <div class="week-previous">Semaine précédente</div>
-                    <div class="week-current">Semaine du x au y</div>
+                    <div class="week-current">Semaine du {{ Carbon::parse($week["start_end"]["start"])->formatLocalized('%d') }} au {{ Carbon::parse($week["start_end"]["end"])->formatLocalized('%d %B %Y') }}</div>
                     <div class="week-next">Semaine suivante</div>
                     <button class="week-button">></button>
                 </div>
                 <div class="menu-contener">
-                    <button  class="btn btn-secondary" id="open-menu">Gestion menus</button>
+                    <button  class="btn btn-secondary" id="open-menu">Gestion niveaux</button>
                 </div>
                 <div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" id="menu">
                       <div class="modal-dialog modal-lg" role="document">
@@ -46,12 +45,12 @@ $level_3_list = LevelController::getLevel3();
                             <th rowspan="2" class="middle" align="middle">Niv 1</th>
                             <th rowspan="2" class="middle">Niv 2</th>
                             <th rowspan="2" class="middle">Niv 3</th>
-                            <th colspan="2" class="middle">Lundi</th>
-                            <th colspan="2" class="middle">Mardi</th>
-                            <th colspan="2" class="middle">Mercredi</th>
-                            <th colspan="2" class="middle">Jeudi</th>
-                            <th colspan="2" class="middle">Vendredi</th>
-                            <th>Action</th>
+                            <th colspan="2" class="middle" id="monday">Lundi {{ Carbon::parse($week["days"]["monday"])->formatLocalized('%d') }}</th>
+                            <th colspan="2" class="middle" id="tuesday">Mardi {{ Carbon::parse($week["days"]["tuesday"])->formatLocalized('%d') }}</th>
+                            <th colspan="2" class="middle" id="wednesday">Mercredi {{ Carbon::parse($week["days"]["wednesday"])->formatLocalized('%d') }}</th>
+                            <th colspan="2" class="middle" id="thursday">Jeudi {{ Carbon::parse($week["days"]["thursday"])->formatLocalized('%d') }}</th>
+                            <th colspan="2" class="middle" id="friday">Vendredi {{ Carbon::parse($week["days"]["friday"])->formatLocalized('%d') }}</th>
+                            <th rowspan="2" class="middle" >Action</th>
                         </tr>
                         <tr>                         
                             <th class="middle">Matin</th>
@@ -64,32 +63,63 @@ $level_3_list = LevelController::getLevel3();
                             <th class="middle">Après-midi</th>
                             <th class="middle">Matin</th>
                             <th class="middle">Après-midi</th>
-                            <th>Action</th>
                         </tr>
                     </thead>
                     <tbody>
-                        <tr>
-                            <td>Niv 1</td>
-                            <td>Niv 2</td>
-                            <td>Niv 3</td>
-                            <td>Lundi</td>
-                            <td>null</td>
-                            <td>Mardi</td>
-                            <td>null</td>
-                            <td>Mercredi</td>
-                            <td>null</td>
-                            <td>Jeudi</td>
-                            <td>null</td>
-                            <td>Vendredi</td>
-                            <td>null</td>
-                            <td>Action</td>
-                        </tr>
+                        <?php
+                         $level_1_list = LevelController::getLevel1();
+
+                         foreach ($level_1_list as $level_1) 
+                         {
+                            
+                            $level_2_list = LevelController::getLevel2WithLevel1($level_1->id);
+
+                            $nbrows = 0;
+                            foreach ($level_2_list as $level_2) 
+                            {
+                                $level_3_list = LevelController::getLevel3WithLevel2($level_2->id);
+                                $nbrows += count($level_3_list);
+                            }
+
+                            echo '<tr>';
+                                $color = 'style="background-color:'.$level_1->color->hex.'"';
+                                echo '<td '.$color.'rowspan="'.$nbrows.'">'.$level_1->name.'</td>';
+                                foreach ($level_2_list as $level_2) 
+                                {
+                                    $level_3_list = LevelController::getLevel3WithLevel2($level_2->id);
+                                    $color = 'style="background-color:'.$level_2->workshop_level_1->color->hex.'"';
+                                    echo '<td '. $color.' rowspan="'.count($level_3_list).'">'.$level_2->name.'</td>';
+
+                                    foreach ($level_3_list as $level_3) 
+                                    {
+                                        $color = 'style="background-color:'.$level_3->workshop_level_2->workshop_level_1->color->hex.'"';
+                                        echo '<td '.$color.'>'.$level_3->name.'</td>';
+
+                                        echo '<td '.$color.' ondblclick="showForm(this)" value="1"></td>';
+                                        echo '<td '.$color.' ondblclick="showForm(this)" value="0"></td>';
+                                        echo '<td '.$color.' ondblclick="showForm(this)" value="1"></td>';
+                                        echo '<td '.$color.' ondblclick="showForm(this)" value="0"></td>';
+                                        echo '<td '.$color.' ondblclick="showForm(this)" value="1"></td>';
+                                        echo '<td '.$color.' ondblclick="showForm(this)" value="0"></td>';
+                                        echo '<td '.$color.' ondblclick="showForm(this)" value="1"></td>';
+                                        echo '<td '.$color.' ondblclick="showForm(this)" value="0"></td>';
+                                        echo '<td '.$color.' ondblclick="showForm(this)" value="1"></td>';
+                                        echo '<td '.$color.' ondblclick="showForm(this)" value="0"></td>';
+                                        echo '<td '.$color.'></td>';
+                                        echo '</tr>';
+                                    }
+                                }
+                            
+                         }
+
+
+                        ?>
                     </tbody>
                 </table>
             </div>
         </div>
 <script>
- $(document ).ready(function() {
+ $(document).ready(function() {
     getMenu();
 });
 $('#open-menu').click(function(){
@@ -286,5 +316,22 @@ function remLevel(level,workshop_id,button)
     }
     });
 }
+function showForm(clicked_cell)
+{
+    var cell = $(clicked_cell);
+    
+    cell.html("<input id='autocomplete'>");    
+
+            $('#autocomplete').autocomplete({
+                source: "/getworkers" 
+            });
+
+
+  
+    
+
+    
+}
+
 </script>    
 @endsection

@@ -43,6 +43,7 @@ Route::post('remlevel2',['uses' => 'LevelController@remLevel2']);
 
 Route::post('remlevel1',['uses' => 'LevelController@remLevel1']);
 
+Route::get('getworkers', ['uses' =>'WorkersController@getworkers']);
 
 
 
