@@ -2,8 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
 use Carbon\Carbon;
+use App\workshop_level_3;
+use App\Worker;
+use Request;
+use Illuminate\Support\Facades\Input;
+
 
 class PlanningController extends Controller
 {
@@ -23,6 +27,74 @@ class PlanningController extends Controller
 		return $weeks;
     }
 
+    public function	addWorkerAtWorkshop()
+    {
+    	// Getting all post data
+        if(Request::ajax()) 
+        {
+            $data = Input::all();
+
+            try
+            {   
+                
+                $worker = Worker::find($data["worker_id"]);
+
+                //first checks if the worker is already doing something at this moment
+                $isFree = true;
+                foreach ($worker->workshop_level_3 as $task)
+                {                    
+                    if($task->pivot->date == $data["date"] && $task->pivot->isMorning == $data["ismorning"])
+                    {
+                        $isFree = false;
+                    }
+                }
+
+                if($isFree)
+                {      
+                    $worker->workshop_level_3()->attach($data["workshop_id"], ['date' => $data["date"],'isMorning' => $data["ismorning"]]);
+
+                    return response(200);
+                }
+                else
+                {
+                    return response(" Le travailleur semble déjà faire quelque chose..." ,400);
+                }
+            }
+            catch(\Exception $er)
+            { 
+                return response(" Veuillez vérifier que le nom d'utilisateur est correct" ,400);
+            }
+                        
+        }
+        else
+        {
+            return response($default_general_error_message,500);
+        }
+    }
+
+    static public function	getPlanningCells()
+    {
+        $workshops = workshop_level_3::all();
+
+        $tablo = array();
+        
+        foreach ($workshops as $workshop) 
+        {    
+            foreach ($workshop->worker as $task) 
+            {
+            	$cell = array(
+                    "workshop_level_3" => $workshop->id,
+                    "isMorning"        => $task->pivot->isMorning,
+                    "date"             => $task->pivot->date,
+                    "text"             =>$task->username,
+                    );
+
+                $tablo[] = $cell;  
+            }
+        }
+        return json_encode($tablo);
+
+    }
+
 }
-//"days" => array("monday" => $date->startOfWeek(),"tuesday" => $date->startOfWeek(+1),"wednesday" => $date->startOfWeek(+2),"thursday" => $date->startOfWeek(+3),"friday" => $date->startOfWeek(+4)));
 

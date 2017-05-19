@@ -13,9 +13,9 @@ class Worker extends Model
         return $this->belongsTo('App\msp');       
     }
 
-    //table intérmiédiaire
-    public function ahok()
+    public function workshop_level_3()
     {
-    	//return $this->belongsToMany('App\Contact','ticket_contact', 'contact_id', 'ticket_id');
+    	return $this->belongsToMany('App\Workshop_level_3','task', 'worker_id', 'workshop_level_3_id')
+    	->withPivot('date', 'isMorning');
     }
 }

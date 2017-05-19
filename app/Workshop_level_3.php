@@ -13,4 +13,10 @@ class Workshop_level_3 extends Model
     {
         return $this->belongsTo('App\Workshop_level_2');       
     }
+    
+     public function worker()
+    {
+    	return $this->belongsToMany('App\Worker','task', 'workshop_level_3_id', 'worker_id')
+        ->withPivot('date', 'isMorning');
+    }
 }

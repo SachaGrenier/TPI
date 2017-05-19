@@ -95,33 +95,87 @@ $week = PlanningController::getWeek(Carbon::now());
                                         $color = 'style="background-color:'.$level_3->workshop_level_2->workshop_level_1->color->hex.'"';
                                         echo '<td '.$color.'>'.$level_3->name.'</td>';
 
-                                        echo '<td '.$color.' ondblclick="showForm(this)" value="1"></td>';
-                                        echo '<td '.$color.' ondblclick="showForm(this)" value="0"></td>';
-                                        echo '<td '.$color.' ondblclick="showForm(this)" value="1"></td>';
-                                        echo '<td '.$color.' ondblclick="showForm(this)" value="0"></td>';
-                                        echo '<td '.$color.' ondblclick="showForm(this)" value="1"></td>';
-                                        echo '<td '.$color.' ondblclick="showForm(this)" value="0"></td>';
-                                        echo '<td '.$color.' ondblclick="showForm(this)" value="1"></td>';
-                                        echo '<td '.$color.' ondblclick="showForm(this)" value="0"></td>';
-                                        echo '<td '.$color.' ondblclick="showForm(this)" value="1"></td>';
-                                        echo '<td '.$color.' ondblclick="showForm(this)" value="0"></td>';
+                                        $date = Carbon::parse($week["days"]["monday"])->formatLocalized('%Y-%m-%d');
+                                       
+                                        echo '<td '.$color.' ondblclick="showForm(this)" data-ismorning="1" data-date="'.$date.'" data-workshop_id="'.$level_3->id.'" class="cell"></td>';
+                                        echo '<td '.$color.' ondblclick="showForm(this)" data-ismorning="0" data-date="'.$date.'" data-workshop_id="'.$level_3->id.'" class="cell"></td>';
+
+                                        $date = Carbon::parse($week["days"]["tuesday"])->formatLocalized('%Y-%m-%d');
+                                        echo '<td '.$color.' ondblclick="showForm(this)" data-ismorning="1" data-date="'.$date.'" data-workshop_id="'.$level_3->id.'" class="cell"></td>';
+                                        echo '<td '.$color.' ondblclick="showForm(this)" data-ismorning="0" data-date="'.$date.'" data-workshop_id="'.$level_3->id.'" class="cell"></td>';
+                                        $date = Carbon::parse($week["days"]["wednesday"])->formatLocalized('%Y-%m-%d');
+
+                                        echo '<td '.$color.' ondblclick="showForm(this)" data-ismorning="1" data-date="'.$date.'" data-workshop_id="'.$level_3->id.'" class="cell"></td>';
+                                        echo '<td '.$color.' ondblclick="showForm(this)" data-ismorning="0" data-date="'.$date.'" data-workshop_id="'.$level_3->id.'" class="cell"></td>';
+                                        $date = Carbon::parse($week["days"]["thursday"])->formatLocalized('%Y-%m-%d');
+
+                                        echo '<td '.$color.' ondblclick="showForm(this)" data-ismorning="1" data-date="'.$date.'" data-workshop_id="'.$level_3->id.'" class="cell"></td>';
+                                        echo '<td '.$color.' ondblclick="showForm(this)" data-ismorning="0" data-date="'.$date.'" data-workshop_id="'.$level_3->id.'" class="cell"></td>';
+                                        $date = Carbon::parse($week["days"]["friday"])->formatLocalized('%Y-%m-%d');
+
+                                        echo '<td '.$color.' ondblclick="showForm(this)" data-ismorning="1" data-date="'.$date.'" data-workshop_id="'.$level_3->id.'" class="cell"></td>';
+                                        echo '<td '.$color.' ondblclick="showForm(this)" data-ismorning="0" data-date="'.$date.'" data-workshop_id="'.$level_3->id.'" class="cell"> </td>';
                                         echo '<td '.$color.'></td>';
                                         echo '</tr>';
                                     }
-                                }
-                            
+                                }  
                          }
-
-
                         ?>
                     </tbody>
                 </table>
             </div>
         </div>
 <script>
+
+var workers_array = [];
+
+var cell;
  $(document).ready(function() {
     getMenu();
+
+    $.ajax({
+            url: '/getworkers',
+            type: 'GET',
+            success: function (data) {
+                workers_array = JSON.parse(data);
+            }
+        });
+    initializeTable();
+
+var $span = $('<span />').html('X').css({ 
+    position: "absolute",
+    marginLeft: 0, marginTop: 0,
+    top: 0, left: 0
 });
+$('.cell').hover(function(){
+    var position = $(this).position();
+    var width = $(this).width();
+
+    $span.position({
+        top: position.top,
+        left: 5
+    });
+
+    //$(this).position().left + $(this).width()
+});
+});
+function initializeTable()
+{
+    $.ajax({
+            url: '/getplanningcells',
+            type: 'GET',
+            success: function (data) 
+            {
+                data = JSON.parse(data);
+                for (var i = data.length - 1; i >= 0; i--) 
+                {
+                    $('*[data-date="'+ data[i].date +'"][data-ismorning="'+ data[i].isMorning +'"][data-workshop_id="'+ data[i].workshop_level_3 +'"]').text(data[i].text);
+                }
+            }
+      });  
+
+}
+
 $('#open-menu').click(function(){
     $('#menu').modal();  
 
@@ -318,20 +372,61 @@ function remLevel(level,workshop_id,button)
 }
 function showForm(clicked_cell)
 {
-    var cell = $(clicked_cell);
+    try
+    {
+        cell.empty();
+    }
+    catch(err) {
+
+    }
+    cell = $(clicked_cell);
     
-    cell.html("<input id='autocomplete'>");    
+    cell.html("<input class='autocomplete'><input id='_token' hidden value='<?php echo csrf_token() ?>'>");    
 
-            $('#autocomplete').autocomplete({
-                source: "/getworkers" 
-            });
+    $('.autocomplete').autocomplete({
+        source: workers_array,
+        select: function (event, ui) {
+            var resetCell = function() {
+                            console.log("aook");
+                        //refresh table
+                        cell.text(ui.item.value);
+                    }
 
-
-  
-    
-
-    
+            insertWorkerInWorkshop(ui.item.id,cell.data("ismorning"),cell.data("date"),cell.data("workshop_id"),$('#_token').val(),resetCell);
+        }
+    });
 }
+function insertWorkerInWorkshop(worker_id,ismorning,date,workshop_id,_token,resetCell)
+{
+    // Variable to hold request
+    var request;
 
+    // Fire off the request to /form.php
+      request = $.ajax({
+        url: '/addworkeratworkshop',
+        type: 'POST',
+        data: {
+                worker_id: worker_id,
+                ismorning: ismorning,
+                date: date,
+                workshop_id: workshop_id,
+                _token: _token
+              }
+    });
+
+    // Callback handler that will be called on success
+    request.done(function(){
+
+            initializeTable();
+    });
+
+    // Callback handler that will be called on failure
+    request.fail(function (jqXHR, textStatus, errorThrown){
+        // Show error in a message box
+        bootbox.alert({
+            message: jqXHR.responseText
+        });
+    });
+}
 </script>    
 @endsection

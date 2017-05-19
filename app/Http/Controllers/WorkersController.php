@@ -139,8 +139,8 @@ class WorkersController extends Controller
         foreach ($workers as $row) 
         {
              $output_array[] = array( 
-            'id' => $row['id'],
-            'value' => $row['firstname'].' '.$row['lastname']);
+            'value' => $row['username'],
+            'id' => $row['id']);
         }
 
         return json_encode($output_array);

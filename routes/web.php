@@ -45,6 +45,9 @@ Route::post('remlevel1',['uses' => 'LevelController@remLevel1']);
 
 Route::get('getworkers', ['uses' =>'WorkersController@getworkers']);
 
+Route::post('addworkeratworkshop', ['uses' => 'PlanningController@AddworkerAtWorkshop']);
+
+Route::get('getplanningcells', ['uses' => 'PlanningController@getPlanningCells']);
 
 
 
