@@ -16,16 +16,6 @@ class LevelController extends Controller
     	return Workshop_level_1::all();
     }
     
-    static public function getLevel2()
-    {
-    	return Workshop_level_2::all();
-    }
-
-    static public function getLevel3()
-    {
-    	return Workshop_level_3::all();
-    }
-
     static public function getLevel2WithLevel1($id_level_1)
     {
         return Workshop_level_2::where('workshop_level_1_id', $id_level_1)->get();

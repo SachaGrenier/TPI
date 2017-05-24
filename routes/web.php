@@ -11,9 +11,15 @@
 |
 */
 
-Route::get('/', function () {
-    return view('planning');
+Route::get('/', function()
+{
+	return redirect('/planning');
 });
+
+Route::get('planning/{weeknb?}/{year?}','PlanningController@index');
+
+
+
 
 Route::get('workers', function () {
     return view('workers');
@@ -45,7 +51,11 @@ Route::post('remlevel1',['uses' => 'LevelController@remLevel1']);
 
 Route::get('getworkers', ['uses' =>'WorkersController@getworkers']);
 
-Route::post('addworkeratworkshop', ['uses' => 'PlanningController@AddworkerAtWorkshop']);
+Route::post('addworkeratworkshop', ['uses' => 'PlanningController@AddWorkerAtWorkshop']);
+
+Route::post('remworkeratworkshop', ['uses' => 'PlanningController@RemoveWorkerAtWorkshop']);
+
+
 
 Route::get('getplanningcells', ['uses' => 'PlanningController@getPlanningCells']);
 

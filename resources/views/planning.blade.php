@@ -2,8 +2,8 @@
 use App\Http\Controllers\LevelController;
 use App\Http\Controllers\PlanningController;
 use Carbon\Carbon;
- setLocale(LC_TIME,config('app.locale'));
-$week = PlanningController::getWeek(Carbon::now());
+
+setLocale(LC_TIME,config('app.locale'));
 ?>
 @extends('layouts.app')
 
@@ -12,11 +12,11 @@ $week = PlanningController::getWeek(Carbon::now());
            <div class="content large">
 
                 <div class="weeks">
-                    <button class="week-button"><</button>
+                    <a href="/planning/{{ $week['start_end']['week'] - 1}}/{{$year}}"><button class="btn btn-secondary" ><</button></a>
                     <div class="week-previous">Semaine précédente</div>
                     <div class="week-current">Semaine du {{ Carbon::parse($week["start_end"]["start"])->formatLocalized('%d') }} au {{ Carbon::parse($week["start_end"]["end"])->formatLocalized('%d %B %Y') }}</div>
                     <div class="week-next">Semaine suivante</div>
-                    <button class="week-button">></button>
+                    <a href="/planning/{{ $week['start_end']['week'] + 1}}/{{$year}}"><button class="btn btn-secondary">></button></a>
                 </div>
                 <div class="menu-contener">
                     <button  class="btn btn-secondary" id="open-menu">Gestion niveaux</button>
@@ -53,16 +53,16 @@ $week = PlanningController::getWeek(Carbon::now());
                             <th rowspan="2" class="middle" >Action</th>
                         </tr>
                         <tr>                         
-                            <th class="middle">Matin</th>
-                            <th class="middle">Après-midi</th>
-                            <th class="middle">Matin</th>
-                            <th class="middle">Après-midi</th>
-                            <th class="middle">Matin</th>
-                            <th class="middle">Après-midi</th>
-                            <th class="middle">Matin</th>
-                            <th class="middle">Après-midi</th>
-                            <th class="middle">Matin</th>
-                            <th class="middle">Après-midi</th>
+                            <th class="middle shaped">Matin</th>
+                            <th class="middle shaped">Après-midi</th>
+                            <th class="middle shaped">Matin</th>
+                            <th class="middle shaped">Après-midi</th>
+                            <th class="middle shaped">Matin</th>
+                            <th class="middle shaped">Après-midi</th>
+                            <th class="middle shaped">Matin</th>
+                            <th class="middle shaped">Après-midi</th>
+                            <th class="middle shaped">Matin</th>
+                            <th class="middle shaped">Après-midi</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -81,14 +81,15 @@ $week = PlanningController::getWeek(Carbon::now());
                                 $nbrows += count($level_3_list);
                             }
 
-                            echo '<tr>';
-                                $color = 'style="background-color:'.$level_1->color->hex.'"';
-                                echo '<td '.$color.'rowspan="'.$nbrows.'">'.$level_1->name.'</td>';
+                            echo '<tr data-level_1="'.$level_1->id.'">';
+                            $color = 'style="background-color:'.$level_1->color->hex.'"';
+                            echo '<td '.$color.'rowspan="'.$nbrows.'" >'.$level_1->name.'</td>';
+                                
                                 foreach ($level_2_list as $level_2) 
                                 {
                                     $level_3_list = LevelController::getLevel3WithLevel2($level_2->id);
                                     $color = 'style="background-color:'.$level_2->workshop_level_1->color->hex.'"';
-                                    echo '<td '. $color.' rowspan="'.count($level_3_list).'">'.$level_2->name.'</td>';
+                                    echo '<td '. $color.' rowspan="'.count($level_3_list).'" >'.$level_2->name.'</td>';
 
                                     foreach ($level_3_list as $level_3) 
                                     {
@@ -114,8 +115,8 @@ $week = PlanningController::getWeek(Carbon::now());
                                         $date = Carbon::parse($week["days"]["friday"])->formatLocalized('%Y-%m-%d');
 
                                         echo '<td '.$color.' ondblclick="showForm(this)" data-ismorning="1" data-date="'.$date.'" data-workshop_id="'.$level_3->id.'" class="cell"></td>';
-                                        echo '<td '.$color.' ondblclick="showForm(this)" data-ismorning="0" data-date="'.$date.'" data-workshop_id="'.$level_3->id.'" class="cell"> </td>';
-                                        echo '<td '.$color.'></td>';
+                                        echo '<td '.$color.' ondblclick="showForm(this)" data-ismorning="0" data-date="'.$date.'" data-workshop_id="'.$level_3->id.'" class="cell"></td>';
+                                        echo '<td '.$color.'><button class="action-button" data-level_1="'.$level_1->id.'" onclick="addRow(this)" >+</button><button class="action-button" onclick="remRow('.$level_3->id.')">X</button></td>';
                                         echo '</tr>';
                                     }
                                 }  
@@ -129,7 +130,6 @@ $week = PlanningController::getWeek(Carbon::now());
 
 var workers_array = [];
 
-var cell;
  $(document).ready(function() {
     getMenu();
 
@@ -141,23 +141,33 @@ var cell;
             }
         });
     initializeTable();
+    
+    var $span = $('<span class="delete-workshop-button" onclick="removeWorkerInWorkhsop(this)" />').html('X'); 
 
-var $span = $('<span />').html('X').css({ 
-    position: "absolute",
-    marginLeft: 0, marginTop: 0,
-    top: 0, left: 0
-});
-$('.cell').hover(function(){
-    var position = $(this).position();
-    var width = $(this).width();
-
-    $span.position({
-        top: position.top,
-        left: 5
+    $('.cell').hover(function(){
+        $cell = $(this);
+        if($cell.html())
+        {
+            if(!$('.autocomplete-box').length)
+            {
+                $cell.append($span);
+            }
+        }
+        else
+        {
+            $span.remove();
+        }
     });
 
-    //$(this).position().left + $(this).width()
-});
+    $(document).click(function(event) {
+        if(!$(event.target).hasClass('autocomplete'))
+        {
+            if($('.autocomplete'))
+            {
+                $('.autocomplete-box').remove();
+            }
+        }
+    });
 });
 function initializeTable()
 {
@@ -372,29 +382,26 @@ function remLevel(level,workshop_id,button)
 }
 function showForm(clicked_cell)
 {
-    try
+    var cell = $(clicked_cell);
+
+    if(!cell.html())
     {
-        cell.empty();
+        
+        cell.html("<div class='autocomplete-box'><input class='autocomplete'><input id='_token' hidden value='<?php echo csrf_token() ?>'></div>");    
+
+        $('.autocomplete').autocomplete({
+            source: workers_array,
+            select: function (event, ui) {
+                var resetCell = function() {
+                                console.log("aook");
+                            //refresh table
+                            cell.text(ui.item.value);
+                        }
+
+                insertWorkerInWorkshop(ui.item.id,cell.data("ismorning"),cell.data("date"),cell.data("workshop_id"),$('#_token').val(),resetCell);
+            }
+        });
     }
-    catch(err) {
-
-    }
-    cell = $(clicked_cell);
-    
-    cell.html("<input class='autocomplete'><input id='_token' hidden value='<?php echo csrf_token() ?>'>");    
-
-    $('.autocomplete').autocomplete({
-        source: workers_array,
-        select: function (event, ui) {
-            var resetCell = function() {
-                            console.log("aook");
-                        //refresh table
-                        cell.text(ui.item.value);
-                    }
-
-            insertWorkerInWorkshop(ui.item.id,cell.data("ismorning"),cell.data("date"),cell.data("workshop_id"),$('#_token').val(),resetCell);
-        }
-    });
 }
 function insertWorkerInWorkshop(worker_id,ismorning,date,workshop_id,_token,resetCell)
 {
@@ -427,6 +434,110 @@ function insertWorkerInWorkshop(worker_id,ismorning,date,workshop_id,_token,rese
             message: jqXHR.responseText
         });
     });
+}
+function removeWorkerInWorkhsop(span)
+{
+    console.log($(span).parent());
+    
+    $cell = $(span).parent();
+    var username = $(span).parent().text();
+    var workshop_level_3 = $cell.attr("data-workshop_id");
+    username = $cell.text().substring(0, $cell.text().length - 1);
+    $cell.html("<input id='_token_rem' hidden value='<?php echo csrf_token() ?>'></div>"); 
+    var token = $('#_token_rem').val();
+
+     // Variable to hold request
+    var request;
+
+    // Fire off the request to /form.php
+      request = $.ajax({
+        url: '/remworkeratworkshop',
+        type: 'POST',
+        data: {
+                worker_username: username,
+                workshop_level_3: workshop_level_3,
+                _token: token
+              }
+    });
+
+    // Callback handler that will be called on success
+    request.done(function(){
+            //remove token
+            $('#_token_rem').remove();
+            initializeTable();
+    });
+
+    // Callback handler that will be called on failure
+    request.fail(function (jqXHR, textStatus, errorThrown){
+        // Show error in a message box
+        bootbox.alert({
+            message: jqXHR.responseText
+        });
+    });
+
+}
+function addRow(cell) 
+{
+    //get row from cell
+    $tr = $(cell).parent().parent();
+    
+    var level_1_id = $(cell).data('level_1');
+    console.log(level_1_id);
+    //remove the 2 first cells
+    //creates new row 
+    var newRow = $tr.clone(true);
+    //get lenght of rowspans
+    var lenght  = $tr.find(">:first-child").attr('rowspan');
+    var lenght2 = $tr.find(">:nth-child(2)").attr('rowspan');
+    //if the row doesn't have information about row
+    if(lenght && lenght2)
+    {
+        console.log("oui");
+        ++lenght;
+        ++lenght2;
+        $(newRow).find(">:lt(2)").remove();
+        $tr.find(">:first-child").attr('rowspan',lenght);
+        console.log($tr.find(">:first-child"));
+        $tr.find(">:nth-child(2)").attr('rowspan',lenght2);
+    }
+    else if (lenght) 
+    {
+
+        lenght2 = $('*[data-level_1="'+level_1_id+'"').find(">:first-child").attr('rowspan');
+        console.log("ah");
+        ++lenght;
+        ++lenght2;
+        $('*[data-level_1="'+level_1_id+'"').find(">:first-child").attr('rowspan', lenght2);
+        $tr.find(">:first-child").attr('rowspan',lenght);
+        $(newRow).find(">:lt(1)").remove();
+
+    }
+    else
+    {
+        console.log("non");
+        //takes the above one
+        $_tr = $(cell).parent().parent().prev();
+        var lenght  = $_tr.find(">:first-child").attr('rowspan');
+        var lenght2 = $_tr.find(">:nth-child(2)").attr('rowspan');
+        ++lenght;
+        ++lenght2;
+        $_tr.find(">:first-child").attr('rowspan',lenght);
+        $_tr.find(">:nth-child(2)").attr('rowspan',lenght2);
+        console.log($_tr);
+
+    }
+    console.log(lenght);
+    console.log(lenght2);
+    console.log($(newRow));
+
+    
+
+    $(newRow).insertAfter($tr.closest('tr'));
+
+}
+function remRow(row_id)
+{
+    // body...
 }
 </script>    
 @endsection
