@@ -60,4 +60,12 @@ Route::post('remworkeratworkshop', ['uses' => 'PlanningController@RemoveWorkerAt
 Route::get('getplanningcells', ['uses' => 'PlanningController@getPlanningCells']);
 
 
+Route::get('print', function(){
+
+        $pdf = App::make('snappy.pdf.wrapper');
+		$pdf->loadHTML(file_get_contents("http://localhost/planning"));
+		return $pdf->inline();
+});
+
+
 

@@ -8,6 +8,7 @@ use App\Worker;
 use Request;
 use View;
 use DateTime;
+use PDF;
 use Illuminate\Support\Facades\Input;
 
 
@@ -168,6 +169,7 @@ class PlanningController extends Controller
         return json_encode($array);
 
     }
+
 
 }
 
