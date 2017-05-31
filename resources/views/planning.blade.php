@@ -4,6 +4,8 @@ use App\Http\Controllers\PlanningController;
 use Carbon\Carbon;
 
 setLocale(LC_TIME,config('app.locale'));
+
+
 ?>
 @extends('layouts.app')
 
@@ -78,18 +80,19 @@ setLocale(LC_TIME,config('app.locale'));
                             foreach ($level_2_list as $level_2) 
                             {
                                 $level_3_list = LevelController::getLevel3WithLevel2($level_2->id);
+                             
                                 $nbrows += count($level_3_list);
                             }
 
-                            echo '<tr data-level_1="'.$level_1->id.'">';
+                            echo '<tr>';
                             $color = 'style="background-color:'.$level_1->color->hex.'"';
-                            echo '<td '.$color.'rowspan="'.$nbrows.'" >'.$level_1->name.'</td>';
+                            echo '<td '.$color.'rowspan="'.$nbrows.'" data-level_1="'.$level_1->id.'" >'.$level_1->name.'</td>';
                                 
                                 foreach ($level_2_list as $level_2) 
                                 {
                                     $level_3_list = LevelController::getLevel3WithLevel2($level_2->id);
                                     $color = 'style="background-color:'.$level_2->workshop_level_1->color->hex.'"';
-                                    echo '<td '. $color.' rowspan="'.count($level_3_list).'" >'.$level_2->name.'</td>';
+                                    echo '<td '. $color.' rowspan="'.count($level_3_list).'"  data-level_2="'.$level_2->id.'">'.$level_2->name.'</td>';
 
                                     foreach ($level_3_list as $level_3) 
                                     {
@@ -116,7 +119,8 @@ setLocale(LC_TIME,config('app.locale'));
 
                                         echo '<td '.$color.' ondblclick="showForm(this)" data-ismorning="1" data-date="'.$date.'" data-workshop_id="'.$level_3->id.'" class="cell"></td>';
                                         echo '<td '.$color.' ondblclick="showForm(this)" data-ismorning="0" data-date="'.$date.'" data-workshop_id="'.$level_3->id.'" class="cell"></td>';
-                                        echo '<td '.$color.'><button class="action-button" data-level_1="'.$level_1->id.'" onclick="addRow(this)" >+</button><button class="action-button" onclick="remRow('.$level_3->id.')">X</button></td>';
+                                        echo '<td '.$color.'><button class="action-button" data-level_1="'.$level_1->id.'" data-level_2="'.$level_2->id.'" onclick="addRow(this)" >+</button>
+                                            <button class="action-button" data-level_1="'.$level_1->id.'" data-level_2="'.$level_2->id.'" onclick="remRow(this)" data-deletable="false">X</button></td>';
                                         echo '</tr>';
                                     }
                                 }  
@@ -179,7 +183,7 @@ function initializeTable()
                 data = JSON.parse(data);
                 for (var i = data.length - 1; i >= 0; i--) 
                 {
-                    $('*[data-date="'+ data[i].date +'"][data-ismorning="'+ data[i].isMorning +'"][data-workshop_id="'+ data[i].workshop_level_3 +'"]').text(data[i].text);
+                    $('[data-date="'+ data[i].date +'"][data-ismorning="'+ data[i].isMorning +'"][data-workshop_id="'+ data[i].workshop_level_3 +'"]').text(data[i].text);
                 }
             }
       });  
@@ -480,64 +484,98 @@ function addRow(cell)
 {
     //get row from cell
     $tr = $(cell).parent().parent();
-    
     var level_1_id = $(cell).data('level_1');
-    console.log(level_1_id);
+    var level_2_id = $(cell).data('level_2');
     //remove the 2 first cells
     //creates new row 
     var newRow = $tr.clone(true);
-    //get lenght of rowspans
-    var lenght  = $tr.find(">:first-child").attr('rowspan');
-    var lenght2 = $tr.find(">:nth-child(2)").attr('rowspan');
-    //if the row doesn't have information about row
-    if(lenght && lenght2)
-    {
-        console.log("oui");
-        ++lenght;
-        ++lenght2;
-        $(newRow).find(">:lt(2)").remove();
-        $tr.find(">:first-child").attr('rowspan',lenght);
-        console.log($tr.find(">:first-child"));
-        $tr.find(">:nth-child(2)").attr('rowspan',lenght2);
-    }
-    else if (lenght) 
-    {
+    //$(newRow).find($(cell)).remove();
 
-        lenght2 = $('*[data-level_1="'+level_1_id+'"').find(">:first-child").attr('rowspan');
-        console.log("ah");
-        ++lenght;
-        ++lenght2;
-        $('*[data-level_1="'+level_1_id+'"').find(">:first-child").attr('rowspan', lenght2);
-        $tr.find(">:first-child").attr('rowspan',lenght);
-        $(newRow).find(">:lt(1)").remove();
-
+    //takes the above one
+    var length  = $tr.find(">:first-child").attr('rowspan');
+    var length2 = $tr.find(">:nth-child(2)").attr('rowspan');
+    if(length && length2)
+    {
+            ++length;
+            ++length2;
+            $(newRow).find(">:lt(2)").remove();
+            $tr.find(">:first-child").attr('rowspan',length);
+            $tr.find(">:nth-child(2)").attr('rowspan',length2);
     }
     else
     {
-        console.log("non");
-        //takes the above one
-        $_tr = $(cell).parent().parent().prev();
-        var lenght  = $_tr.find(">:first-child").attr('rowspan');
-        var lenght2 = $_tr.find(">:nth-child(2)").attr('rowspan');
+        lenght  = $('*[data-level_1="'+level_1_id+'"]').first().attr('rowspan');
+        lenght2 = $('*[data-level_2="'+level_2_id+'"]').first().attr('rowspan');
         ++lenght;
         ++lenght2;
-        $_tr.find(">:first-child").attr('rowspan',lenght);
-        $_tr.find(">:nth-child(2)").attr('rowspan',lenght2);
-        console.log($_tr);
+     
+        $('*[data-level_1="'+level_1_id+'"]').first().attr('rowspan',lenght);
+        $('*[data-level_2="'+level_2_id+'"]').first().attr('rowspan',lenght2);
+        if($tr.children().length > 12)
+        {
+            switch($tr.children().length)
+            {
+                case 13:
+                    $(newRow).find(">:lt(1)").remove();
+                break;
 
-    }
-    console.log(lenght);
-    console.log(lenght2);
-    console.log($(newRow));
+                case 14:
+                    $(newRow).find(">:lt(2)").remove();
+                break;
 
-    
-
+            }       
+        }
+    }   
+    $(newRow).find('>:last-child').find('>:last-child').data('deletable', true);
+    console.log();
+    $(newRow).find('.cell').empty();
     $(newRow).insertAfter($tr.closest('tr'));
 
 }
-function remRow(row_id)
+function remRow(cell)
 {
-    // body...
+    $tr = $(cell).parent().parent();
+    if($tr.children().length > 12)
+    {
+        switch($tr.children().length)
+        {
+            case 13:
+            console.log("ah"); 
+            break;
+
+            case 14:
+            console.log("ah"); 
+                
+            break;
+
+        }       
+    }
+    else
+    {
+        if($(cell).data('deletable'))
+        {
+         $tr.find('.cell').each(function() {
+                 var element = $(this);
+               if (!element.text().trim() == "") {
+                   console.log(this);
+               }
+            });
+            var level_1_id = $(cell).data('level_1');
+            var level_2_id = $(cell).data('level_2');
+
+            length  = $('*[data-level_1="'+level_1_id+'"]').first().attr('rowspan');
+            length2 = $('*[data-level_2="'+level_2_id+'"]').first().attr('rowspan');
+            --length;
+            --length2;
+         
+            $('*[data-level_1="'+level_1_id+'"]').first().attr('rowspan',length);
+            $('*[data-level_2="'+level_2_id+'"]').first().attr('rowspan',length2);
+
+        
+            $tr.remove();
+        }
+    }
 }
+
 </script>    
 @endsection

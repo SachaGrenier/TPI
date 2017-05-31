@@ -11,11 +11,18 @@ use Illuminate\Support\Facades\Input;
 
 class LevelController extends Controller
 {
+
+    /**
+    * Get all workshops level 1 from the database and returns it into objects
+    *
+    * @return Level 1 workshops objects
+    */
     static public function getLevel1()
     {
     	return Workshop_level_1::all();
     }
     
+ 
     static public function getLevel2WithLevel1($id_level_1)
     {
         return Workshop_level_2::where('workshop_level_1_id', $id_level_1)->get();
@@ -25,6 +32,13 @@ class LevelController extends Controller
         return Workshop_level_3::where('workshop_level_2_id', $id_level_2)->get();
     }
 
+    /**
+    * Adds a level 1 workshop into the database
+    *
+    * @param $data, given by ajax
+    *
+    * @return response, with error message if something went wrong
+    */
     public function addLevel1()
     {
     	 if(Request::ajax()) 
@@ -49,7 +63,13 @@ class LevelController extends Controller
             return response($default_general_error_message,500);
         }
     }
-
+    /**
+    * Adds a level 2 workshop into the database
+    *
+    * @param $data, given by ajax
+    *
+    * @return response, with error message if something went wrong
+    */
     public function addLevel2()
     {
     	 if(Request::ajax()) 
@@ -75,6 +95,13 @@ class LevelController extends Controller
         }
     }
 
+    /**
+    * Adds a level 3 workshop into the database
+    *
+    * @param $data, given by ajax
+    *
+    * @return response, with error message if something went wrong
+    */
     public function addLevel3()
     {
          if(Request::ajax()) 
@@ -100,6 +127,13 @@ class LevelController extends Controller
         }
     }
 
+    /**
+    * Removes a level 1 workshop from the database
+    *
+    * @param $data, given by ajax
+    *
+    * @return response, with error message if something went wrong
+    */
     public function remLevel1()
     {
         if(Request::ajax()) 
@@ -119,6 +153,13 @@ class LevelController extends Controller
         else
             return response($default_general_error_message,500);
     }
+     /**
+    * Removes a level 2 workshop from the database
+    *
+    * @param $data, given by ajax
+    *
+    * @return response, with error message if something went wrong
+    */
     public function remLevel2()
     {
         if(Request::ajax()) 
@@ -138,6 +179,13 @@ class LevelController extends Controller
         else
             return response($default_general_error_message,500);
     }
+     /**
+    * Removes a level 3 workshop from the database
+    *
+    * @param $data, given by ajax
+    *
+    * @return response, with error message if something went wrong
+    */
     public function remLevel3()
     {
         if(Request::ajax()) 
