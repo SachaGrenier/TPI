@@ -20,6 +20,7 @@ class WorkersController extends Controller
     //returns the array
     public function getWorkersArray()
     {
+        
     	$workers = Worker::all();
 
     	

@@ -5,11 +5,12 @@ namespace App\Http\Controllers;
 use Carbon\Carbon;
 use App\workshop_level_3;
 use App\Worker;
-use Request;
 use View;
+
 use DateTime;
-use PDF;
 use Illuminate\Support\Facades\Input;
+use Request;
+
 
 
 class PlanningController extends Controller
@@ -41,10 +42,11 @@ class PlanningController extends Controller
             $date->setISODate($year,$weeknb);
             $date = Carbon::instance($date);
         }
+
         //returns week data and year
         return View::make('planning', [
             'week' => $this->getWeek($date),
-            'year' => $year,
+            'year' => $year
         ]);
     }
     /**
@@ -122,12 +124,11 @@ class PlanningController extends Controller
         {
             // Getting all post data
             $data = Input::all();
-
             try
             {  
                 $worker = Worker::where('username',$data["worker_username"])->get();
                  
-                $worker[0]->workshop_level_3()->detach($data["workshop_level_3"]);
+                $worker[0]->workshop_level_3()->wherePivot('date', '=', $data["date"])->wherePivot('isMorning', '=', $data["ismorning"])->detach($data["workshop_level_3"]);
                return response(200);
             }
             catch(\Exception $er)
@@ -167,8 +168,9 @@ class PlanningController extends Controller
             }
         }
         return json_encode($array);
-
     }
+
+    
 
 
 }
