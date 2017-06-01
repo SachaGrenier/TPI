@@ -22,11 +22,21 @@ class LevelController extends Controller
     	return Workshop_level_1::all();
     }
     
- 
+    /**
+    * get levle 2 data using level 1 foreign key
+    *
+    * @return Level 2 workshops objects
+    */
     static public function getLevel2WithLevel1($id_level_1)
     {
         return Workshop_level_2::where('workshop_level_1_id', $id_level_1)->get();
     }
+
+    /**
+    * get levle 3 data using level 2 foreign key
+    *
+    * @return Level 3 workshops objects
+    */
     static public function getLevel3WithLevel2($id_level_2)
     {
         return Workshop_level_3::where('workshop_level_2_id', $id_level_2)->get();
@@ -37,11 +47,11 @@ class LevelController extends Controller
     *
     * @param $data, given by ajax
     *
-    * @return response, with error message if something went wrong
+    * @return http response, with error message if something went wrong
     */
     public function addLevel1()
     {
-    	 if(Request::ajax()) 
+    	if(Request::ajax()) 
         {
             $data = Input::all();
             try
@@ -59,20 +69,20 @@ class LevelController extends Controller
             }
         }
         else
-        {
             return response($default_general_error_message,500);
-        }
+        
     }
+
     /**
     * Adds a level 2 workshop into the database
     *
     * @param $data, given by ajax
     *
-    * @return response, with error message if something went wrong
+    * @return http response, with error message if something went wrong
     */
     public function addLevel2()
     {
-    	 if(Request::ajax()) 
+    	if(Request::ajax()) 
         {
             $data = Input::all();
             try
@@ -90,9 +100,8 @@ class LevelController extends Controller
             }
         }
         else
-        {
             return response($default_general_error_message,500);
-        }
+        
     }
 
     /**
@@ -100,7 +109,7 @@ class LevelController extends Controller
     *
     * @param $data, given by ajax
     *
-    * @return response, with error message if something went wrong
+    * @return http response, with error message if something went wrong
     */
     public function addLevel3()
     {
@@ -122,9 +131,8 @@ class LevelController extends Controller
             }
         }
         else
-        {
             return response($default_general_error_message,500);
-        }
+        
     }
 
     /**
@@ -132,7 +140,7 @@ class LevelController extends Controller
     *
     * @param $data, given by ajax
     *
-    * @return response, with error message if something went wrong
+    * @return http response, with error message if something went wrong
     */
     public function remLevel1()
     {
@@ -158,7 +166,7 @@ class LevelController extends Controller
     *
     * @param $data, given by ajax
     *
-    * @return response, with error message if something went wrong
+    * @return http response, with error message if something went wrong
     */
     public function remLevel2()
     {
@@ -179,12 +187,12 @@ class LevelController extends Controller
         else
             return response($default_general_error_message,500);
     }
-     /**
+    /**
     * Removes a level 3 workshop from the database
     *
     * @param $data, given by ajax
     *
-    * @return response, with error message if something went wrong
+    * @return http response, with error message if something went wrong
     */
     public function remLevel3()
     {
@@ -206,8 +214,11 @@ class LevelController extends Controller
             return response($default_general_error_message,500);
     }
 
-    ///getMenu
-    //creates the menu and returns it
+     /**
+    * Generates the menu used to manage the levels
+    *
+    * @return Menu, as html. Is retrieved with AJAX get method
+    */
     public function getMenu()
     {
     	$level_1_list = Workshop_level_1::all();

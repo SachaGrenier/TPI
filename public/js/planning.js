@@ -1,151 +1,4 @@
-<?php 
-use App\Http\Controllers\LevelController;
-use App\Http\Controllers\PlanningController;
-use Carbon\Carbon;
 
-setLocale(LC_TIME,config('app.locale'));
-?>
-@extends('layouts.app')
-
-@section('content')
-        <div class="flex-center position-ref full-height">
-           <div class="content large">
-
-                <div class="weeks">
-                    <a href="/planning/{{ $week['start_end']['week'] - 1}}/{{$year}}"><button class="btn btn-secondary" ><</button></a>
-                    <div class="week-previous">Semaine précédente</div>
-                    <div class="week-current">Semaine du {{ Carbon::parse($week["start_end"]["start"])->formatLocalized('%d') }} au {{ Carbon::parse($week["start_end"]["end"])->formatLocalized('%d %B %Y') }}</div>
-                    <div class="week-next">Semaine suivante</div>
-                    <a href="/planning/{{ $week['start_end']['week'] + 1}}/{{$year}}"><button class="btn btn-secondary">></button></a>
-                </div>
-                <div class="menu-contener">
-                    <button  class="btn btn-secondary" id="open-menu">Gestion niveaux</button>
-                </div>
-                <div class="modal fade bs-example-modal-lg" tabindex="-1" role="dialog" id="menu">
-                      <div class="modal-dialog modal-lg" role="document">
-                        <div class="modal-content">
-                          <div class="modal-header">
-                            <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                            <h4 class="modal-title">Menu</h4>
-                          </div>
-                          <div class="modal-body">
-                              
-                           </div>
-                           <div class="clearfix"></div>
-                          <div class="modal-footer">
-                            <button type="button" class="btn btn-default" data-dismiss="modal">Fermer</button>
-                          </div>
-                        </div><!-- /.modal-content -->
-                      </div><!-- /.modal-dialog -->
-                    </div><!-- /.modal -->
-                    
-                <div id="planning">
-                    <table class="table table-bordered planning" cellspacing="0" width="100%">
-                        <thead>
-                            <tr>
-                                <th rowspan="2" class="middle" align="middle">Niv 1</th>
-                                <th rowspan="2" class="middle">Niv 2</th>
-                                <th rowspan="2" class="middle">Niv 3</th>
-                                <th colspan="2" class="middle" id="monday">Lundi {{ Carbon::parse($week["days"]["monday"])->formatLocalized('%d') }}</th>
-                                <th colspan="2" class="middle" id="tuesday">Mardi {{ Carbon::parse($week["days"]["tuesday"])->formatLocalized('%d') }}</th>
-                                <th colspan="2" class="middle" id="wednesday">Mercredi {{ Carbon::parse($week["days"]["wednesday"])->formatLocalized('%d') }}</th>
-                                <th colspan="2" class="middle" id="thursday">Jeudi {{ Carbon::parse($week["days"]["thursday"])->formatLocalized('%d') }}</th>
-                                <th colspan="2" class="middle" id="friday">Vendredi {{ Carbon::parse($week["days"]["friday"])->formatLocalized('%d') }}</th>
-                                <th rowspan="2" class="middle" >Action</th>
-                            </tr>
-                            <tr>                         
-                                <th class="middle shaped">Matin</th>
-                                <th class="middle shaped">Après-midi</th>
-                                <th class="middle shaped">Matin</th>
-                                <th class="middle shaped">Après-midi</th>
-                                <th class="middle shaped">Matin</th>
-                                <th class="middle shaped">Après-midi</th>
-                                <th class="middle shaped">Matin</th>
-                                <th class="middle shaped">Après-midi</th>
-                                <th class="middle shaped">Matin</th>
-                                <th class="middle shaped">Après-midi</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <?php
-                             $level_1_list = LevelController::getLevel1();
-
-                             foreach ($level_1_list as $level_1) 
-                             {
-                                
-                                $level_2_list = LevelController::getLevel2WithLevel1($level_1->id);
-
-                                $nbrows = 0;
-                                foreach ($level_2_list as $level_2) 
-                                {
-                                    $level_3_list = LevelController::getLevel3WithLevel2($level_2->id);
-                                 
-                                    $nbrows += count($level_3_list);
-                                }
-
-                                echo '<tr>';
-                                $color = 'style="background-color:'.$level_1->color->hex.'"';
-                                echo '<td '.$color.'rowspan="'.$nbrows.'" data-level_1="'.$level_1->id.'" >'.$level_1->name.'</td>';
-                                    
-                                    foreach ($level_2_list as $level_2) 
-                                    {
-                                        $level_3_list = LevelController::getLevel3WithLevel2($level_2->id);
-                                        $color = 'style="background-color:'.$level_2->workshop_level_1->color->hex.'"';
-                                        echo '<td '. $color.' rowspan="'.count($level_3_list).'"  data-level_2="'.$level_2->id.'">'.$level_2->name.'</td>';
-
-                                        foreach ($level_3_list as $level_3) 
-                                        {
-                                            $color = 'style="background-color:'.$level_3->workshop_level_2->workshop_level_1->color->hex.'"';
-                                            echo '<td '.$color.'>'.$level_3->name.'</td>';
-
-                                            $date = Carbon::parse($week["days"]["monday"])->formatLocalized('%Y-%m-%d');
-                                           
-                                            echo '<td '.$color.' ondblclick="showForm(this)" data-ismorning="1" data-date="'.$date.'" data-workshop_id="'.$level_3->id.'" class="cell"></td>';
-                                            echo '<td '.$color.' ondblclick="showForm(this)" data-ismorning="0" data-date="'.$date.'" data-workshop_id="'.$level_3->id.'" class="cell"></td>';
-
-                                            $date = Carbon::parse($week["days"]["tuesday"])->formatLocalized('%Y-%m-%d');
-                                            echo '<td '.$color.' ondblclick="showForm(this)" data-ismorning="1" data-date="'.$date.'" data-workshop_id="'.$level_3->id.'" class="cell"></td>';
-                                            echo '<td '.$color.' ondblclick="showForm(this)" data-ismorning="0" data-date="'.$date.'" data-workshop_id="'.$level_3->id.'" class="cell"></td>';
-                                            $date = Carbon::parse($week["days"]["wednesday"])->formatLocalized('%Y-%m-%d');
-
-                                            echo '<td '.$color.' ondblclick="showForm(this)" data-ismorning="1" data-date="'.$date.'" data-workshop_id="'.$level_3->id.'" class="cell"></td>';
-                                            echo '<td '.$color.' ondblclick="showForm(this)" data-ismorning="0" data-date="'.$date.'" data-workshop_id="'.$level_3->id.'" class="cell"></td>';
-                                            $date = Carbon::parse($week["days"]["thursday"])->formatLocalized('%Y-%m-%d');
-
-                                            echo '<td '.$color.' ondblclick="showForm(this)" data-ismorning="1" data-date="'.$date.'" data-workshop_id="'.$level_3->id.'" class="cell"></td>';
-                                            echo '<td '.$color.' ondblclick="showForm(this)" data-ismorning="0" data-date="'.$date.'" data-workshop_id="'.$level_3->id.'" class="cell"></td>';
-                                            $date = Carbon::parse($week["days"]["friday"])->formatLocalized('%Y-%m-%d');
-
-                                            echo '<td '.$color.' ondblclick="showForm(this)" data-ismorning="1" data-date="'.$date.'" data-workshop_id="'.$level_3->id.'" class="cell"></td>';
-                                            echo '<td '.$color.' ondblclick="showForm(this)" data-ismorning="0" data-date="'.$date.'" data-workshop_id="'.$level_3->id.'" class="cell"></td>';
-                                            echo '<td '.$color.'><button class="action-button" data-level_1="'.$level_1->id.'" data-level_2="'.$level_2->id.'" onclick="addRow(this)" >+</button>
-                                                <button class="action-button" data-level_1="'.$level_1->id.'" data-level_2="'.$level_2->id.'" onclick="remRow(this)" data-deletable="false">X</button></td>';
-                                            echo '</tr>';
-                                        }
-                                    }  
-                             }
-                            ?>
-                        </tbody>
-                    </table>
-                    <style>
-                        td
-                        {
-                            border:1px solid grey;
-                        }
-                        th
-                        {
-                            border:1px solid grey;
-                        }
-                    </style>
-            
-                </div>
-                {{ Form::open(array('url' => 'print','method'=>'POST', 'id' => 'PdfForm')) }}
-                    {{ Form::hidden('html_content', '' ) }}
-                    {{ Form::submit('PDF',['class' => 'btn btn-secondary']) }}
-                {{ Form::close() }}
-            </div>
-        </div>
-<script>
 var workers_array = [];
 
  $(document).ready(function() {
@@ -358,7 +211,7 @@ function addLevel3(button)
 
 function remLevel(level,workshop_id,button)
 {
-    bootbox.confirm("Êtes-vous sûr de vouloir supprimer cet atelier?", function(result){
+    bootbox.confirm("�tes-vous s�r de vouloir supprimer cet atelier?", function(result){
     if(result)
     {
         // Variable to hold request
@@ -599,6 +452,3 @@ function remRow(cell)
         }
     }
 }
-
-</script>    
-@endsection

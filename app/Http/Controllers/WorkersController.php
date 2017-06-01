@@ -14,16 +14,14 @@ class WorkersController extends Controller
 
     private $default_general_error_message = "Un problème est intervenu, contactez l'administrateur du système";
 
-    ///getWorkersArray
-    //creates an array with the Workers Data
-    //adds a form at the last line of the array
-    //returns the array
+    /**
+    * Creates an array with the Workers Data and adds a form at the last line of the array
+    *
+    * @return  array with workers data formated
+    */
     public function getWorkersArray()
     {
-        
     	$workers = Worker::all();
-
-    	
 
     	setLocale(LC_TIME,config('app.locale'));
 
@@ -53,14 +51,18 @@ class WorkersController extends Controller
         	$worker->delete_link = "<button onclick='deleteRow(". $value->id .",this)' value='". csrf_token()."' class='btn btn-danger middle-button'>X</button>";
 
             $array[] = $worker;
-        }    
-
+        }
+                
     	return $array;
     }
 
-    //deleteWorker
-    //finds worker in database and deletes it
-    //returns http response
+    /**
+    * Deletes worker from the database
+    *
+    * @param $request : Has the csrf token and the planning as html string
+    *
+    * @return http response, with error message if something went wrong
+    */
     public function deleteWorker()
     {
         if(Request::ajax()) 
@@ -82,14 +84,18 @@ class WorkersController extends Controller
        
     }
 
-    ///addWorker
-    //inserts worker in database with data given
-    //returns http response
+    /**
+    * Adds a worker into the database
+    *
+    * @param Data given my ajax post
+    *
+    * @return  http response, with error message if something went wrong
+    */
     public function addWorker()
     {
-         // Getting all post data
         if(Request::ajax()) 
         {
+            //Getting all post data
             $data = Input::all();
             try
             {
@@ -109,14 +115,17 @@ class WorkersController extends Controller
             }
         }
         else
-        {
             return response($default_general_error_message,500);
-        }
+        
     }
 
-    ///getMSPSelection
-    //creates select with MSPs data
-    //returns select in text
+    /**
+    * Generates html select for MSP, using MSPs from the database
+    *
+    * @param $request : Has the csrf token and the planning as html string
+    *
+    * @return  select as html string
+    */
     private function getMSPSelection()
     {
         $MSPs = msp::all();
@@ -131,12 +140,17 @@ class WorkersController extends Controller
 
         return $select;
     }
+    /**
+    * Creates an array with the workers, using their usernames and their ids
+    *
+    * @return  JSON encoded array
+    */
     public function getWorkers()
     {
         $workers = Worker::all();
 
         $output_array = array();
-        //fills this empty array with applicant's names and encodes it
+
         foreach ($workers as $row) 
         {
              $output_array[] = array( 
@@ -146,6 +160,4 @@ class WorkersController extends Controller
 
         return json_encode($output_array);
     }
- 
-
 }

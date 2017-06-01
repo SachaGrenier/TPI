@@ -6,7 +6,6 @@ use Carbon\Carbon;
 use App\workshop_level_3;
 use App\Worker;
 use View;
-
 use DateTime;
 use Illuminate\Support\Facades\Input;
 use Request;
@@ -43,12 +42,12 @@ class PlanningController extends Controller
             $date = Carbon::instance($date);
         }
 
-        //returns week data and year
         return View::make('planning', [
             'week' => $this->getWeek($date),
             'year' => $year
         ]);
     }
+
     /**
     * Returns an array of week data from given date
     *
@@ -109,9 +108,8 @@ class PlanningController extends Controller
             }       
         }
         else
-        {
             return response($default_general_error_message,500);
-        }
+        
     }
     /**
     * Remove worker in workshop from ajax array
@@ -137,9 +135,8 @@ class PlanningController extends Controller
             }       
         }
         else
-        {
             return response($default_general_error_message,500);
-        }
+        
     }
 
     /**
