@@ -39,7 +39,7 @@
                 <a class="navbar-brand" href="{{ url('/') }}">
                     {{ config('app.name', 'Planning') }}
                 </a>
-                <a class="navbar-brand" href="{{ url('/panning') }}">
+                <a class="navbar-brand" href="{{ url('/workersplanning') }}">
                     Planning travailleurs
                 </a>
                  <a class="navbar-brand" href="{{ url('/workers') }}">

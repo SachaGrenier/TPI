@@ -105,6 +105,7 @@ setLocale(LC_TIME,config('app.locale'));
 
                                             $date = Carbon::parse($week["days"]["tuesday"])->formatLocalized('%Y-%m-%d');
                                             echo '<td '.$color.' ondblclick="showForm(this)" data-ismorning="1" data-date="'.$date.'" data-workshop_id="'.$level_3->id.'" class="cell"></td>';
+                                            
                                             echo '<td '.$color.' ondblclick="showForm(this)" data-ismorning="0" data-date="'.$date.'" data-workshop_id="'.$level_3->id.'" class="cell"></td>';
                                             $date = Carbon::parse($week["days"]["wednesday"])->formatLocalized('%Y-%m-%d');
 
@@ -202,11 +203,8 @@ function initializeTable()
                 {
                     $('[data-date="'+ data[i].date +'"][data-ismorning="'+ data[i].isMorning +'"][data-workshop_id="'+ data[i].workshop_level_3 +'"]').text(data[i].text);
                 }
-               
-
             }
       });  
-
 }
 
 $('#open-menu').click(function(){

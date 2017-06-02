@@ -49,6 +49,40 @@ class PlanningController extends Controller
     }
 
     /**
+    * Returns the planning view with parameters
+    *
+    * @param $weeknb, number of the week
+    *
+    * @param $year
+    *
+    *
+    * @return view "workersplanning" with week data given by getWeek and year
+    */
+    public function workersplanning($weeknb = null,$year = null)
+    {
+
+        //if values are null, takes the date of the day
+        if($weeknb == null || $year == null)
+        {
+            $date = Carbon::now();
+            $year = $date->year; 
+            $weeknb = $date->startOfWeek();
+        }
+        else
+        {   
+            //creates DateTime object from year and week number and transforms it to a Carbon date 
+            $date = new DateTime();
+            $date->setISODate($year,$weeknb);
+            $date = Carbon::instance($date);
+        }
+
+        return View::make('workersplanning', [
+            'week' => $this->getWeek($date),
+            'year' => $year
+        ]);
+    }
+
+    /**
     * Returns an array of week data from given date
     *
     * @param Carbon object $date from wich I take all the elements I need
@@ -112,7 +146,7 @@ class PlanningController extends Controller
         
     }
     /**
-    * Remove worker in workshop from ajax array
+    * Removes worker in workshop from ajax array
     *
     * @return response code (with message if the response is negative)
     */
@@ -167,8 +201,98 @@ class PlanningController extends Controller
         return json_encode($array);
     }
 
+    /**
+    * Get all the workers from the database and return them
+    *
+    * @return workers
+    */
+    static public function getWorkersPlanning()
+    {
+        return Worker::all();
+    }
+
+    /**
+    * Generates cells for Worker's planning
+    *
+    * @param Worker's id, to get specified tasks he does and $dates, to get his tasks at the good moment
+    *
+    * @return $array of cells
+    */
+    static public function getWorkerWorkshops($worker_id,$dates)
+    {
+        $worker = Worker::find($worker_id);
+
+        $array = array();
+
+        $style = 'style="background-color: ';
+        $style_end = '"';
+
+        foreach ($dates as $date)
+        {
+            $tasks = $worker->workshop_level_3()->wherePivot('date', '=', $date)->get();
+
+            switch (count($tasks)) 
+            {
+                case 0:
+                    array_push($array,"<td></td>");
+                    array_push($array,"<td></td>");
+               continue;
+                
+                case 2:
+                    $color0 = $style.$tasks[0]->workshop_level_2->workshop_level_1->color->hex.$style_end;
+                    $color1 =  $style.$tasks[1]->workshop_level_2->workshop_level_1->color->hex.$style_end;
+                    $array[] = '<td '.$color0.' >'.$tasks[0]->name.'</td>';
+                    $array[] = '<td '.$color1.'> '.$tasks[1]->name.'</td>';
+                continue;
+
+                case 1:
+                    if ($tasks[0]->pivot->isMorning)
+                    {
+                        $color0 = $style.$tasks[0]->workshop_level_2->workshop_level_1->color->hex.$style_end;
+                        $array[] = '<td  '.$color0.' >'.$tasks[0]->name.'</td>';
+                        array_push($array,"<td></td>");
+                    }
+                    else
+                    {
+                        $color0 = $style.$tasks[0]->workshop_level_2->workshop_level_1->color->hex.$style_end;
+                        array_push($array,"<td></td>");
+                        $array[] = '<td '.$color0.'>'.$tasks[0]->name.'</td>';
+                    }
+                break;
+
+            }
+        }
+       return $array;
+    }
+
     
 
 
 }
 
+/*
+if($tasks)
+            {
+                foreach ($tasks as $task)
+                {
+                if(!$task->pivot->isMorning)
+                {
+                    $array[] = $task->name;
+                }
+                else
+                    $array[] = "ah";
+
+                if($task->pivot->isMorning)
+                {
+                    $array[] = $task->name;
+                }
+                else
+                    $array[] = "ah";
+                }
+            }
+            else
+            {
+                $array[] = "ah";
+            }
+            
+*/

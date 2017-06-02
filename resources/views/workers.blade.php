@@ -39,7 +39,7 @@ $MSPs = MSPController::getAllMSPs();
 			</table>
 		</div>
 		<br>
-		<h2>Maîtres socioprofessionnel</h2>
+		<h2>Maîtres socioprofessionnels</h2>
 		<div class="msp-table">
 			{{ Form::open(array('url' => 'addmsp','method'=>'POST','class' => 'form-inline')) }}
 				{{ Form::Text('msp_firstname','',['class' => 'form-control','id' => 'msp_firstname','placeholder' => ' Prénom']) }}

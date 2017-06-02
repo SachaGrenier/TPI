@@ -30,12 +30,20 @@ class MSPController extends Controller
 
         try
         {
-        	$MSP->firstname = $request->input('msp_firstname');
-    	    $MSP->lastname = $request->input('msp_lastname');
-	        $MSP->initials = $request->input('msp_initials');
-	        $MSP->save();
-	        Session::flash('status', 'Le Maître Sociaux Professionnel <strong>'.$MSP->firstname.' '.$MSP->lastname.'</strong> à bien été crée.'); 
-	            Session::flash('class', 'alert-success'); 
+            if(count(msp::where('initials',$request->input("msp_initials"))->get()) > 0)
+            {
+                Session::flash('status', 'Ces initiales existent déjà'); 
+                Session::flash('class', 'alert-danger'); 
+            }
+            else
+            {
+                $MSP->firstname = $request->input('msp_firstname');
+                $MSP->lastname = $request->input('msp_lastname');
+                $MSP->initials = $request->input('msp_initials');
+                $MSP->save();
+                Session::flash('status', 'Le Maître Sociaux Professionnel <strong>'.$MSP->firstname.' '.$MSP->lastname.'</strong> à bien été crée.'); 
+                Session::flash('class', 'alert-success'); 
+            }
         }
         catch(\Exception $ex)
         {

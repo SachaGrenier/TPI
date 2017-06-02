@@ -25,6 +25,9 @@ Route::get('workers', function () {
     return view('workers');
 });
 
+
+Route::get('workersplanning/{weeknb?}/{year?}','PlanningController@workersplanning');
+
 Route::get('getworkersarray', ['uses' =>'WorkersController@getWorkersArray']);
 
 Route::post('deleteworker', ['uses' =>'WorkersController@deleteWorker']);

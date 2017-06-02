@@ -98,7 +98,17 @@ class WorkersController extends Controller
             //Getting all post data
             $data = Input::all();
             try
-            {
+            {   
+                //check if name is already taken 
+                if(count(Worker::where('firstname',$data["firstname"])->where('lastname',$data["lastname"])->get()) > 0)
+                {
+                    return response(" Il semble que ce travailleur est déjà dans la base de données" ,400);
+                }
+                //check if percentage is ok
+                if($data["percentage"] < 1 || $data["percentage"] > 101)
+                {
+                     return response(" Veuillez vérifier le pourcentage" ,400);
+                }
                 $worker = new Worker;      
                 $worker->firstname = $data["firstname"];
                 $worker->lastname = $data["lastname"];
