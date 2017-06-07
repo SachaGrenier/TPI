@@ -269,30 +269,3 @@ class PlanningController extends Controller
 
 
 }
-
-/*
-if($tasks)
-            {
-                foreach ($tasks as $task)
-                {
-                if(!$task->pivot->isMorning)
-                {
-                    $array[] = $task->name;
-                }
-                else
-                    $array[] = "ah";
-
-                if($task->pivot->isMorning)
-                {
-                    $array[] = $task->name;
-                }
-                else
-                    $array[] = "ah";
-                }
-            }
-            else
-            {
-                $array[] = "ah";
-            }
-            
-*/
